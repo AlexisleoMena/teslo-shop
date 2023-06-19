@@ -36,8 +36,8 @@ jobs:
           minor_pattern: "feat:"
         id: version
         
-      - name: Set version
-        id: setVersion
+      - name: Format version
+        id: formatVersion
         run: |
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
             echo "::set-output name=version::${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
@@ -48,7 +48,7 @@ jobs:
       - name: Build Docker Image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          NEW_VERSION: ${{ steps.setVersion.outputs.version }}
+          NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
         run: |
           docker build -t $DOCKER_USER/docker-graphql:$NEW_VERSION .
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
@@ -57,7 +57,7 @@ jobs:
 
       - name: Push Docker Image
         env:
-          NEW_VERSION: ${{ steps.setVersion.outputs.version }}
+          NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
         run: |
           docker push $DOCKER_USER/docker-graphql:$NEW_VERSION
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
