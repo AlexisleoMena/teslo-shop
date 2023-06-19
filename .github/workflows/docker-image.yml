@@ -1,0 +1,68 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+    types: [ "merged" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+      - name: Determine branch
+        id: branch
+        run: echo "::set-output name=branch::${{ github.ref }}"
+
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          major_pattern: "major:"
+          minor_pattern: "feat:"
+        id: version
+        
+      - name: Set version
+        id: setVersion
+        run: |
+          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
+            echo "::set-output name=version::${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
+          elif [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/desarrollo" ]]; then
+            echo "::set-output name=version::${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
+          fi
+
+      - name: Build Docker Image
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          NEW_VERSION: ${{ steps.setVersion.outputs.version }}
+        run: |
+          docker build -t $DOCKER_USER/docker-graphql:$NEW_VERSION .
+          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
+            docker build -t $DOCKER_USER/docker-graphql:latest .
+          fi
+
+      - name: Push Docker Image
+        env:
+          NEW_VERSION: ${{ steps.setVersion.outputs.version }}
+        run: |
+          docker push $DOCKER_USER/docker-graphql:$NEW_VERSION
+          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
+            docker push $DOCKER_USER/docker-graphql:latest
+          fi
+
+
+
