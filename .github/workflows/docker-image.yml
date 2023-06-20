@@ -51,7 +51,7 @@ jobs:
           echo "newVersion: ${{ env.NEW_VERSION }}!!"
           docker build -t ${{ env.DOCKER_USER }}/teslo-shop:${{ env.NEW_VERSION }} .
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
-            docker build -t $DOCKER_USER/teslo-shop:latest .
+            docker build -t ${{ env.DOCKER_USER }}/teslo-shop:latest .
           fi
 
       - name: Push Docker Image
