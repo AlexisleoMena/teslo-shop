@@ -47,12 +47,9 @@ jobs:
           fi
           
       - name: Create Git Tag
-        env:
-          GH_USER_NAME: ${{secrets.GH_USER_NAME}}
-          GH_USER_EMAIL: ${{secrets.GH_USER_EMAIL}}
         run: |
-          git config --local user.name "$GH_USER_NAME"
-          git config --local user.email "$GH_EMAIL_NAME"
+          git config user.name "$(git log -n 1 --pretty=format:%an)"
+          git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
           git push origin HEAD:refs/heads/${{ env.BRANCH }} v${{ env.NEW_VERSION }}
 
