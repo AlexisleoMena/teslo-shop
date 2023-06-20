@@ -18,7 +18,8 @@ docker-compose up -d
 
 7. Ejecutar SEED 
 ```
-http://localhost:3000/api/seed 
+http://localhost:3000/api/seed
+
 ```
 
 
