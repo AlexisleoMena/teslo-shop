@@ -52,7 +52,7 @@ jobs:
           GH_USER_EMAIL: ${{secrets.GH_USER_EMAIL}}
         run: |
           git config --local user.name "$GH_USER_NAME"
-          git config --local user.name "$GH_EMAIL_NAME"
+          git config --local user.email "$GH_EMAIL_NAME"
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
           git push origin HEAD:refs/heads/${{ env.BRANCH }} v${{ env.NEW_VERSION }}
 
