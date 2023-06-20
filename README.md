@@ -23,4 +23,3 @@ http://localhost:3000/api/seed
 ```
 8. 
 
- c
