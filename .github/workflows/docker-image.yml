@@ -40,6 +40,7 @@ jobs:
           PROD_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
           DEV_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
         run: |
+          echo "dev version: $DEV_VERSION"
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             echo "NEW_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
           elif [[ "${{ env.BRANCH }}" == "refs/heads/dev" ]]; then
