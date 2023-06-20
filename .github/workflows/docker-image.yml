@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "main", "dev" ]
  
-
 jobs:
 
   build:
@@ -13,7 +12,7 @@ jobs:
 
     steps:
 
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -25,7 +24,7 @@ jobs:
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
-      - name: Determine branch
+      - name: Determine Branch
         run: echo "BRANCH=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Git Semantic Version
@@ -36,12 +35,11 @@ jobs:
           format: "${major}.${minor}.${patch}-prerelease${increment}"
         id: version
         
-      - name: Format version
+      - name: Create New Format Version
         env:
           PROD_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
           DEV_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
         run: |
-          echo "dev version: $DEV_VERSION"
           echo "${{steps.version.outputs.version}}"
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             echo "NEW_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
@@ -55,13 +53,16 @@ jobs:
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
           git push origin refs/tags/v${{ env.NEW_VERSION }}
-
+          
+      - name: Update Package Version
+        run: |
+          jq '.version = env.NEW_VERSION' package.json > tmpfile.json
+          mv tmpfile.json package.json
+          
       - name: Build Docker Image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
-          echo "newVersion: ${{ env.NEW_VERSION }}!!"
-          echo "newVersion: ${{ secrets.DOCKER_USER }}!!"
           docker build -t $DOCKER_USER/teslo-shop:${{env.NEW_VERSION}} .
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker build -t $DOCKER_USER/teslo-shop:latest .
