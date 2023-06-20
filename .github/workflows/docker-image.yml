@@ -53,7 +53,7 @@ jobs:
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
           git push origin refs/tags/v${{ env.NEW_VERSION }}
-          npm version ${{ env.NEW_VERSION }} --no-git-tag-version
+          NEW_VERSION=$(npm --no-git-tag-version version from-git) && git commit -am "Bump version to $NEW_VERSION" && git push origin ${{ env.BRANCH }}
           
       - name: Build Docker Image
         env:
