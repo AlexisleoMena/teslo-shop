@@ -26,8 +26,7 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
       - name: Determine branch
-        id: branch
-        run: echo "branch=${{ github.ref }}" >> $GITHUB_OUTPUT
+        run: echo "BRANCH=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Git Semantic Version
         uses: PaulHatch/semantic-version@v4.0.3
@@ -37,32 +36,32 @@ jobs:
         id: version
         
       - name: Format version
-        id: formatVersion
+        env:
+          PROD_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
+          DEV_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
         run: |
-          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
-            echo "formatVersion=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}" >> $GITHUB_OUTPUT
-          elif [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/dev" ]]; then
-            echo "formatVersion=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}" >> $GITHUB_OUTPUT
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
+            echo "FORMAT_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.BRANCH }}" == "refs/heads/dev" ]]; then
+            echo "FORMAT_VERSION=${{ env.DEV_VERSION }}" >> $GITHUB_ENV
           fi
 
       - name: Build Docker Image
         env:
-          NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
-          echo "newVersion: $NEW_VERSION!!"
-          docker build -t $DOCKER_USER/teslo-shop:$NEW_VERSION .
-          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
+          echo "newVersion: ${{ env.FORMAT_VERSION }}!!"
+          docker build -t $DOCKER_USER/teslo-shop:${{ env.FORMAT_VERSION }} .
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker build -t $DOCKER_USER/teslo-shop:latest .
           fi
 
       - name: Push Docker Image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
         run: |
-          docker push $DOCKER_USER/teslo-shop:$NEW_VERSION
-          if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
+          docker push $DOCKER_USER/teslo-shop:${{ env.FORMAT_VERSION }}
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker push $DOCKER_USER/teslo-shop:latest
           fi
 
