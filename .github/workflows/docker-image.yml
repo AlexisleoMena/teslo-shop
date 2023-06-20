@@ -56,9 +56,8 @@ jobs:
           
       - name: Update Package Version
         run: |
-          jq '.version = env.NEW_VERSION' package.json > tmpfile.json
-          mv tmpfile.json package.json
-          
+          npm version $NEW_VERSION --no-git-tag-version
+
       - name: Build Docker Image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
