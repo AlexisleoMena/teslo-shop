@@ -49,15 +49,15 @@ jobs:
       - name: Build Docker Image
         run: |
           echo "newVersion: ${{ env.NEW_VERSION }}!!"
-          echo "newVersion: ${{ env.DOCKER_USER }}!!"
-          docker build -t ${{env.DOCKER_USER}}/teslo-shop:${{env.NEW_VERSION}} .
+          echo "newVersion: ${{ secrets.DOCKER_USER }}!!"
+          docker build -t ${{secrets.DOCKER_USER}}/teslo-shop:${{env.NEW_VERSION}} .
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker build -t ${{ env.DOCKER_USER }}/teslo-shop:latest .
           fi
 
       - name: Push Docker Image
         run: |
-          docker push ${{env.DOCKER_USER}}/teslo-shop:${{env.NEW_VERSION}}
+          docker push ${{secrets.DOCKER_USER}}/teslo-shop:${{env.NEW_VERSION}}
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker push "${{ env.DOCKER_USER }}/teslo-shop:latest"
           fi
