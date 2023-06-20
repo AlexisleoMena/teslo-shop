@@ -48,7 +48,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          echo "newVersion: ${{ env.FORMAT_VERSION }}!!"
+          echo "newVersion: ${{ env.NEW_VERSION }}!!"
           docker build -t ${{ env.DOCKER_USER }}/teslo-shop:${{ env.NEW_VERSION }} .
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker build -t $DOCKER_USER/teslo-shop:latest .
