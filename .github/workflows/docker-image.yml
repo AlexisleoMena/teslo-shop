@@ -51,7 +51,7 @@ jobs:
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
-          git push origin HEAD:refs/heads/${{ env.BRANCH }} v${{ env.NEW_VERSION }}
+          git push origin refs/tags/v${{ env.NEW_VERSION }}
 
       - name: Build Docker Image
         env:
