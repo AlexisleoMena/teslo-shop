@@ -50,7 +50,7 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
         run: |
-          echo: "newVersion: $NEW_VERSION"
+          echo "newVersion: $NEW_VERSION"
           docker build -t $DOCKER_USER/docker-graphql:$NEW_VERSION .
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
             docker build -t $DOCKER_USER/docker-graphql:latest .
