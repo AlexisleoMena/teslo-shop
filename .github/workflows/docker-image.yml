@@ -41,28 +41,24 @@ jobs:
           DEV_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
         run: |
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
-            echo "FORMAT_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
+            echo "NEW_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
           elif [[ "${{ env.BRANCH }}" == "refs/heads/dev" ]]; then
-            echo "FORMAT_VERSION=${{ env.DEV_VERSION }}" >> $GITHUB_ENV
+            echo "NEW_VERSION=${{ env.DEV_VERSION }}" >> $GITHUB_ENV
           fi
 
       - name: Build Docker Image
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
           echo "newVersion: ${{ env.FORMAT_VERSION }}!!"
-          docker build -t $DOCKER_USER/teslo-shop:${{ env.FORMAT_VERSION }} .
+          docker build -t ${{ env.DOCKER_USER }}/teslo-shop:${{ env.NEW_VERSION }} .
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
             docker build -t $DOCKER_USER/teslo-shop:latest .
           fi
 
       - name: Push Docker Image
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
-          docker push $DOCKER_USER/teslo-shop:${{ env.FORMAT_VERSION }}
+          docker push ${{ env.DOCKER_USER }}/teslo-shop:${{ env.NEW_VERSION }}
           if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
-            docker push $DOCKER_USER/teslo-shop:latest
+            docker push ${{ env.DOCKER_USER }}/teslo-shop:latest
           fi
 
 
