@@ -47,8 +47,8 @@ jobs:
 
       - name: Build Docker Image
         env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
           NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
           echo "newVersion: $NEW_VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           docker build -t $DOCKER_USER/docker-graphql:$NEW_VERSION .
