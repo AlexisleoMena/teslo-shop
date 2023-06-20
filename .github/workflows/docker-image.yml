@@ -51,6 +51,7 @@ jobs:
           GH_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}
           GH_USER_NAME: ${{ secrets.GH_USER_NAME }}
         run: |
+          echo: "$GH_USER_EMAIL"
           git config --local user.email $GH_USER_EMAIL
           git config --local user.name $GH_USER_NAME
           git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
