@@ -41,7 +41,7 @@ jobs:
         run: |
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
             echo "::set-output name=version::${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
-          elif [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/desarrollo" ]]; then
+          elif [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/dev" ]]; then
             echo "::set-output name=version::${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
           fi
 
@@ -51,9 +51,9 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
         run: |
           echo "newVersion: $NEW_VERSION!!"
-          docker build -t $DOCKER_USER/docker-graphql:$NEW_VERSION .
+          docker build -t $DOCKER_USER/teslo-shop:$NEW_VERSION .
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
-            docker build -t $DOCKER_USER/docker-graphql:latest .
+            docker build -t $DOCKER_USER/teslo-shop:latest .
           fi
 
       - name: Push Docker Image
@@ -61,9 +61,9 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           NEW_VERSION: ${{ steps.formatVersion.outputs.version }}
         run: |
-          docker push $DOCKER_USER/docker-graphql:$NEW_VERSION
+          docker push $DOCKER_USER/teslo-shop:$NEW_VERSION
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
-            docker push $DOCKER_USER/docker-graphql:latest
+            docker push $DOCKER_USER/teslo-shop:latest
           fi
 
 
