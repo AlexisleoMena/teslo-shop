@@ -1,0 +1,80 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+ 
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+      - name: Determine branch
+        run: echo "BRANCH=${{ github.ref }}" >> $GITHUB_ENV
+
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          major_pattern: "major:"
+          minor_pattern: "feat:"
+          format: "${major}.${minor}.${patch}-prerelease${increment}"
+        id: version
+        
+      - name: Format version
+        env:
+          PROD_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
+          DEV_VERSION: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
+        run: |
+          echo "dev version: $DEV_VERSION"
+          echo "${{steps.version.outputs.version}}"
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
+            echo "NEW_VERSION=${{ env.PROD_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.BRANCH }}" == "refs/heads/dev" ]]; then
+            echo "NEW_VERSION=${{ env.DEV_VERSION }}" >> $GITHUB_ENV
+          fi
+          
+      - name: Create Git Tag
+        run: |
+          git config user.name "$(git log -n 1 --pretty=format:%an)"
+          git config user.email "$(git log -n 1 --pretty=format:%ae)"
+          git tag -a v${{ env.NEW_VERSION }} -m "Version v${{ env.NEW_VERSION }}"
+          git push origin refs/tags/v${{ env.NEW_VERSION }}
+
+      - name: Build Docker Image
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        run: |
+          echo "newVersion: ${{ env.NEW_VERSION }}!!"
+          echo "newVersion: ${{ secrets.DOCKER_USER }}!!"
+          docker build -t $DOCKER_USER/teslo-shop:${{env.NEW_VERSION}} .
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
+            docker build -t $DOCKER_USER/teslo-shop:latest .
+          fi
+
+      - name: Push Docker Image
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        run: |
+          docker push $DOCKER_USER/teslo-shop:${{env.NEW_VERSION}}
+          if [[ "${{ env.BRANCH }}" == "refs/heads/main" ]]; then
+            docker push $DOCKER_USER/teslo-shop:latest
+          fi
+
+
+
