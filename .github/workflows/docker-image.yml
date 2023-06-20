@@ -56,7 +56,7 @@ jobs:
          
       - name: Update Package Version
         run: |
-         NEW_VERSION=$(npm --no-git-tag-version version from-git) && git commit -am "Bump version to $NEW_VERSION" && git push origin ${{ env.BRANCH }}
+         NEW_VERSION=$(npm version --no-git-tag-version ${{ env.NEW_VERSION }}) && git commit -am "Bump version to $NEW_VERSION" && git push origin ${{ env.BRANCH }}
          
       - name: Build Docker Image
         env:
