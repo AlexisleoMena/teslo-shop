@@ -27,7 +27,7 @@ jobs:
 
       - name: Determine branch
         id: branch
-        run: echo "{branch}=${{ github.ref }}"
+        run: echo "{branch}=${{ github.ref }}" >> $GITHUB_OUTPUT
 
       - name: Git Semantic Version
         uses: PaulHatch/semantic-version@v4.0.3
@@ -40,9 +40,9 @@ jobs:
         id: formatVersion
         run: |
           if [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/main" ]]; then
-            echo "{formatVersion}=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}"
+            echo "{formatVersion}=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch}}" >> $GITHUB_OUTPUT
           elif [[ "${{ steps.branch.outputs.branch }}" == "refs/heads/dev" ]]; then
-            echo "{formatVersion}=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}"
+            echo "{formatVersion}=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}-prerelease${{ steps.version.outputs.increment }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build Docker Image
